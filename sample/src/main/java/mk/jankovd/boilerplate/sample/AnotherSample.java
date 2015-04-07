@@ -1,8 +1,8 @@
 package mk.jankovd.boilerplate.sample;
 
-import boilerhate.SampleAnn;
+import boilerhate.BundleExtrasBuilder;
 
-@SampleAnn
+@BundleExtrasBuilder
 public class AnotherSample {
 
 }

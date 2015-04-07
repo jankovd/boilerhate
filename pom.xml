@@ -23,6 +23,7 @@
     <modules>
         <module>sample</module>
         <module>boilerhate-compiler</module>
+        <module>boilerhate-api</module>
     </modules>
 
     <properties>

@@ -2,10 +2,12 @@ package boilerhate;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.CLASS)
+import static java.lang.annotation.RetentionPolicy.CLASS;
+
+@Retention(CLASS)
 @Target(ElementType.TYPE)
-public @interface SampleAnn {
+public @interface BundleExtrasBuilder {
+
 }

@@ -45,14 +45,19 @@ public class BoilerhateProcessor extends AbstractProcessor {
   }
 
   @Override public Set<String> getSupportedAnnotationTypes() {
-    Set<String> supported = new LinkedHashSet<String>(1);
-    supported.add(SampleAnn.class.getCanonicalName());
+    Set<String> supported = new LinkedHashSet<String>(6);
+    supported.add(ArgumentExtra.class.getCanonicalName());
+    supported.add(BundleExtra.class.getCanonicalName());
+    supported.add(BundleExtrasBuilder.class.getCanonicalName());
+    supported.add(Mandatory.class.getCanonicalName());
+    supported.add(ParcelState.class.getCanonicalName());
+    supported.add(StyledAttr.class.getCanonicalName());
     return supported;
   }
 
   @Override public boolean process(Set<? extends TypeElement> annotations,
       RoundEnvironment roundEnv) {
-    Set<? extends Element> annotatedWith = roundEnv.getElementsAnnotatedWith(SampleAnn.class);
+    Set<? extends Element> annotatedWith = roundEnv.getElementsAnnotatedWith(BundleExtrasBuilder.class);
     for (final Element element : annotatedWith) {
       final PackageElement packageOf = elementUtils.getPackageOf(element);
       try {
