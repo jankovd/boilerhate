@@ -37,3 +37,4 @@ proguard/
 ._*
 .Spotlight-V100
 .Trashes
+local/

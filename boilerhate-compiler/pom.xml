@@ -7,11 +7,12 @@
     <parent>
         <groupId>mk.jankovd.boilerhate</groupId>
         <artifactId>boilerhate-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>boilerhate-compiler</artifactId>
-    <version>1.0.0</version>
+    <name>Boilerhate Compiler</name>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
@@ -19,14 +20,28 @@
             <artifactId>javapoet</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto</groupId>
+            <artifactId>auto-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>boilerhate-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>mk.jankovd.boilerhate</groupId>
-            <artifactId>boilerhate-api</artifactId>
-            <version>1.0.0</version>
         </dependency>
     </dependencies>
 

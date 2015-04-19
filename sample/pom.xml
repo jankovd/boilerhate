@@ -7,22 +7,43 @@
     <parent>
         <groupId>mk.jankovd.boilerhate</groupId>
         <artifactId>boilerhate-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>sample</artifactId>
-    <version>1.0.0</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>mk.jankovd.boilerhate</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>boilerhate-compiler</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>boilerhate-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.auto.value</groupId>
             <artifactId>auto-value</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.simpligility.maven.plugins</groupId>
+                <artifactId>android-maven-plugin</artifactId>
+                <extensions>true</extensions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
