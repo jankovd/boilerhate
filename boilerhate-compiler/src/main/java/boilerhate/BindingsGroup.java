@@ -54,6 +54,18 @@ class BindingsGroup {
   }
 
   public void writeSourceToFile(Filer filer) {
+    writeExtrasToFile(filer);
+  }
+
+  // Will need to wrap this method along with keyToExtraBindings in a
+  // class specific for the extras. the generated unpackExtras method would
+  // have a variable signature depending on the target class:
+  // unpack(Fragment) where the arguments would be retrieved from fr.getArguments(),
+  // unpack(Intent) where the arguments would be read from the intent,
+  // and unpack(Bundle) for every other class. This is a todo.
+  // A static builder() method would also be defined in this class if there is
+  // an arguments builder defined for it. Another todo.
+  private void writeExtrasToFile(Filer filer) {
     final String bundleParam = BUNDLE_PARAM_NAME;
     final String target = TARGET_NAME;
     final CodeBlock.Builder unpackExtrasMethodCode = CodeBlock.builder();
