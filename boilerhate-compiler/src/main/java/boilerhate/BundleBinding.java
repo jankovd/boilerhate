@@ -47,7 +47,13 @@ abstract class BundleBinding {
     } else {
       return;
     }
-    isMandatory |= element.getAnnotation(Mandatory.class) != null;
+    if (!skipMandatoryValidation()) {
+      isMandatory |= element.getAnnotation(Mandatory.class) != null;
+    }
+  }
+
+  protected boolean skipMandatoryValidation() {
+    return false;
   }
 
   private boolean addPropertiesFromExecutable(Element element, ExecutableType execType) {
@@ -92,7 +98,22 @@ abstract class BundleBinding {
     }
   }
 
-  public void addToCodeBlock(CodeBlock.Builder codeBlock, String targetName, String bundleName) {
+  public void writePutToCodeBlock(CodeBlock.Builder codeBlock, String targetName,
+      String bundleName) {
+    if (getterType == null) { return; }
+    final boolean isMethod = getterElement.getKind() == ElementKind.METHOD;
+    final String getter = getterElement.getSimpleName().toString();
+    if (isMethod) {
+      codeBlock.addStatement("$L.$L($S, $L.$L())", bundleName, bundleTypeMethods.putMethod(),
+          bundleKey, targetName, getter);
+    } else {
+      codeBlock.addStatement("$L.$L($S, $L.$L)", bundleName, bundleTypeMethods.putMethod(),
+          bundleKey, targetName, getter);
+    }
+  }
+
+  public void writeGetToCodeBlock(CodeBlock.Builder codeBlock, String targetName,
+      String bundleName) {
     if (setterType == null) { return; }
     final boolean isMethod = setterElement.getKind() == ElementKind.METHOD;
     final String setter = setterElement.getSimpleName().toString();
@@ -142,10 +163,27 @@ abstract class BundleBinding {
       super(env, bundleKey);
     }
 
-    public static String getKey(Element element) {
+    public static String getExtraKey(Element element) {
       final Extra annotation = element.getAnnotation(Extra.class);
       if (annotation == null) { return null; }
       return getKey(element, annotation.value());
+    }
+  }
+
+  public static class StateBundleBinding extends BundleBinding {
+
+    public StateBundleBinding(Environment env, String bundleKey) {
+      super(env, bundleKey);
+    }
+
+    public static String getStateKey(Element element) {
+      final State annotation = element.getAnnotation(State.class);
+      if (annotation == null) { return null; }
+      return getKey(element, annotation.value());
+    }
+
+    @Override protected boolean skipMandatoryValidation() {
+      return true;
     }
   }
 }

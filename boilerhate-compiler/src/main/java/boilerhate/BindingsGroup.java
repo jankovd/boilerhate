@@ -33,6 +33,8 @@ class BindingsGroup {
   private Map<String, BundleBinding> keyToStateBinding;
   private ExtrasBuilderBindings extrasBuilder;
 
+  private TypeName resolvedTypeBundle;
+
   public BindingsGroup(TypeMirror classType, String packageName, String className,
       Environment env) {
     this.classType = classType;
@@ -41,6 +43,12 @@ class BindingsGroup {
     this.env = env;
     this.classElement = env.types.asElement(classType);
     this.keyToExtraBindings = new HashMap<String, BundleBinding>(8);
+    this.keyToStateBinding= new HashMap<String, BundleBinding>(8);
+    resolveTypes(env);
+  }
+
+  private void resolveTypes(Environment env) {
+    resolvedTypeBundle = TypeName.get(env.elements.getTypeElement(BUNDLE_CLASS_NAME).asType());
   }
 
   public void addExtra(String bundleKey, Element element) {
@@ -53,8 +61,18 @@ class BindingsGroup {
     hasMandatoryExtras |= binding.isMandatory();
   }
 
+  public void addState(String bundleKey, Element element) {
+    BundleBinding binding = keyToStateBinding.get(bundleKey);
+    if (binding == null) {
+      binding = new BundleBinding.StateBundleBinding(env, bundleKey);
+      keyToStateBinding.put(bundleKey, binding);
+    }
+    binding.addElementProperties(element);
+  }
+
   public void writeSourceToFile(Filer filer) {
     writeExtrasToFile(filer);
+    writeStateToFile(filer);
   }
 
   // Will need to wrap this method along with keyToExtraBindings in a
@@ -66,6 +84,7 @@ class BindingsGroup {
   // A static builder() method would also be defined in this class if there is
   // an arguments builder defined for it. Another todo.
   private void writeExtrasToFile(Filer filer) {
+    if (keyToExtraBindings.isEmpty()) { return; }
     final String bundleParam = BUNDLE_PARAM_NAME;
     final String target = TARGET_NAME;
     final CodeBlock.Builder unpackExtrasMethodCode = CodeBlock.builder();
@@ -78,13 +97,12 @@ class BindingsGroup {
           .endControlFlow();
     }
     for (final BundleBinding extraBinding : keyToExtraBindings.values()) {
-      extraBinding.addToCodeBlock(unpackExtrasMethodCode, target, bundleParam);
+      extraBinding.writeGetToCodeBlock(unpackExtrasMethodCode, target, bundleParam);
     }
     final MethodSpec unpackExtrasMethod = MethodSpec.methodBuilder("unpackExtras")
         .addModifiers(Modifier.STATIC)
         .addParameter(TypeName.get(classType), target)
-        .addParameter(TypeName.get(env.elements.getTypeElement(BUNDLE_CLASS_NAME).asType()),
-            bundleParam)
+        .addParameter(resolvedTypeBundle, bundleParam)
         .addCode(unpackExtrasMethodCode.build())
         .build();
     final String extrasClassName = className + "_Extra";
@@ -101,6 +119,64 @@ class BindingsGroup {
       JavaFileObject sourceFile = filer.createSourceFile(qualifiedExtrasClassName, classElement);
       Writer out = sourceFile.openWriter();
       JavaFile.builder(packageName, extrasTypeSpec)
+          .skipJavaLangImports(true)
+          .build()
+          .writeTo(out);
+      out.flush();
+      out.close();
+    } catch (IOException e) {
+      env.logger.error(classElement, "Failure while writing to file: %s", e.getMessage());
+    }
+  }
+
+  // parent state for views.
+  private void writeStateToFile(Filer filer) {
+    if (keyToStateBinding.isEmpty()) { return; }
+    final String bundleParam = BUNDLE_PARAM_NAME;
+    final String target = TARGET_NAME;
+    final CodeBlock.Builder saveStateMethodCode = CodeBlock.builder()
+        .addStatement("$T $L = new Bundle($L)", resolvedTypeBundle, bundleParam,
+            keyToStateBinding.size());
+    for (final BundleBinding stateBinding : keyToStateBinding.values()) {
+      stateBinding.writePutToCodeBlock(saveStateMethodCode, target, bundleParam);
+    }
+    saveStateMethodCode.addStatement("return $L", bundleParam);
+    final MethodSpec saveStateMethod = MethodSpec.methodBuilder("saveState")
+        .addModifiers(Modifier.STATIC)
+        .addParameter(TypeName.get(classType), target)
+        .returns(resolvedTypeBundle)
+        .addCode(saveStateMethodCode.build())
+        .build();
+
+    final CodeBlock.Builder restoreStateMethodCode = CodeBlock.builder()
+        .beginControlFlow("if ($L == null)", bundleParam)
+        .addStatement("return")
+        .endControlFlow();
+    for (final BundleBinding extraBinding : keyToStateBinding.values()) {
+      extraBinding.writeGetToCodeBlock(restoreStateMethodCode, target, bundleParam);
+    }
+    final MethodSpec restoreStateMethod = MethodSpec.methodBuilder("restoreState")
+        .addModifiers(Modifier.STATIC)
+        .addParameter(TypeName.get(classType), target)
+        .addParameter(resolvedTypeBundle, bundleParam)
+        .addCode(restoreStateMethodCode.build())
+        .build();
+
+    final String stateClassName = className + "_State";
+    final TypeSpec stateTypeSpec = TypeSpec.classBuilder(stateClassName)
+        .addAnnotation(AnnotationSpec.builder(Generated.class)
+            .addMember("value", "$S", BoilerhateProcessor.class.getName())
+            .build())
+        .addMethod(saveStateMethod)
+        .addMethod(restoreStateMethod)
+        .build();
+    try {
+      final String qualifiedStateClassName = packageName + "." + stateClassName;
+      env.logger.warning("Writing %s originating from %s ", qualifiedStateClassName,
+          classElement.getSimpleName().toString());
+      JavaFileObject sourceFile = filer.createSourceFile(qualifiedStateClassName, classElement);
+      Writer out = sourceFile.openWriter();
+      JavaFile.builder(packageName, stateTypeSpec)
           .skipJavaLangImports(true)
           .build()
           .writeTo(out);

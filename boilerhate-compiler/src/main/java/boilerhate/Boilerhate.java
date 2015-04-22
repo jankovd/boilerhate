@@ -26,7 +26,7 @@ class Boilerhate {
     if (!canWriteFromPackage(element)) {
       env.logger.error(element, "Cannot access '%s' from package, must not be private.",
           element.getSimpleName().toString());
-    } else if ((bundleKey = BundleBinding.ExtraBundleBinding.getKey(element)) == null) {
+    } else if ((bundleKey = BundleBinding.ExtraBundleBinding.getExtraKey(element)) == null) {
       env.logger.error(element, "Missing value for key on @Extra annotated element.");
     } else if ((typeGroup = getBindingsGroupForElement(element)) == null) {
       env.logger.error(element, "Cannot create group: %s", element.getSimpleName().toString());
@@ -36,10 +36,17 @@ class Boilerhate {
   }
 
   public void addState(Element element) {
+    final BindingsGroup typeGroup;
+    final String bundleKey;
     if (!canWriteFromPackage(element)) {
       env.logger.error(element, "Cannot access '%s' from package, must not be private.",
           element.getSimpleName().toString());
-      return;
+    } else if ((bundleKey = BundleBinding.StateBundleBinding.getStateKey(element)) == null) {
+      env.logger.error(element, "Missing value for key on @State annotated element.");
+    } else if ((typeGroup = getBindingsGroupForElement(element)) == null) {
+      env.logger.error(element, "Cannot create group: %s", element.getSimpleName().toString());
+    } else {
+      typeGroup.addState(bundleKey, element);
     }
   }
 
