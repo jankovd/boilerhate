@@ -3,7 +3,7 @@ package boilerhate;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-public class Environment {
+class Environment {
   public final Elements elements;
   public final Types types;
   public final Logger logger;

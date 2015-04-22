@@ -9,7 +9,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-public abstract class BundleBinding {
+abstract class BundleBinding {
   private final Environment env;
   private boolean isMandatory;
   private String bundleKey;

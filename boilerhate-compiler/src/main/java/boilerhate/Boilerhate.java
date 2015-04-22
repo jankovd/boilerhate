@@ -9,7 +9,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 
-public class Boilerhate {
+class Boilerhate {
   public static final boolean DEBUG = true;
 
   private final Environment env;

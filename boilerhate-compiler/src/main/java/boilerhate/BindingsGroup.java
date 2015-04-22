@@ -21,7 +21,7 @@ import javax.tools.JavaFileObject;
 class BindingsGroup {
   private static final String BUNDLE_PARAM_NAME = "args";
   private static final String TARGET_NAME = "target";
-  public static final String BUNDLE_CLASS_NAME = "android.os.Bundle";
+  private static final String BUNDLE_CLASS_NAME = "android.os.Bundle";
 
   private final TypeMirror classType;
   private final String packageName;
